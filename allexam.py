@@ -16,7 +16,7 @@ from urllib.parse import urljoin
 def create_driver():
     options = Options()
 
-    # options.add_argument("--headless=new")
+    options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
@@ -28,7 +28,7 @@ def create_driver():
     )
 
     # Remove this line if running on Windows
-    # options.binary_location = "/usr/bin/chromium"
+    options.binary_location = "/usr/bin/chromium"
 
     service = Service(ChromeDriverManager().install())
 
