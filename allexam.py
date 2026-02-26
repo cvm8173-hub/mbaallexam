@@ -48,64 +48,65 @@ LISTING_URL = "https://www.shiksha.com/mba/exams-pc-101"
 
 # ---------------- LISTING SCRAPER ----------------
 def scrape_listing_page(driver,page_no=1):
-    if page_no == 1:
-        url = LISTING_URL
-    else:
-        url = f"{LISTING_URL}?pageNo={page_no}"
+    all_exams = []
 
-    driver.get(url)
-
-    WebDriverWait(driver, 15).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "uilp_exam_card"))
-    )
-
-    scroll_to_bottom(driver)
-
-    soup = BeautifulSoup(driver.page_source, "html.parser")
-
-    exams = []
-
-    cards = soup.select(".uilp_exam_card")
-
-    for card in cards:
-        result = {}
-
-        exam_title = card.select_one(".exam_title")
-
-        if exam_title:
-            result["exam_short_name"] = exam_title.get_text(strip=True)
-
-            relative_link = exam_title.get("href")
-            result["exam_relative_url"] = relative_link
-            result["exam_full_url"] = urljoin(BASE, relative_link)
-
-            # 🔥 Base URL for further pattern/syllabus scraping
-            result["base_url"] = urljoin(BASE, relative_link).rstrip("/")
+    for page_no in range(1, 5):   # 1 se 3 tak pages
+        if page_no == 1:
+            url = LISTING_URL
         else:
-            continue
+            url = f"{LISTING_URL}?pageNo={page_no}"
 
-        # Full Exam Name
-        full_name = card.select_one(".exam_flnm")
-        result["exam_full_name"] = full_name.get_text(strip=True) if full_name else None
+        driver.get(url)
 
-        # Important Dates
-        result["important_dates"] = []
+        WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "uilp_exam_card"))
+        )
 
-        rows = card.select(".exam_impdates table tr")
+        scroll_to_bottom(driver)
 
-        for row in rows:
-            date_col = row.select_one(".fix-tdwidth p")
-            event_col = row.select_one(".fix-textlength p")
+        soup = BeautifulSoup(driver.page_source, "html.parser")
 
-            if date_col and event_col:
-                result["important_dates"].append({
-                    "date": " ".join(date_col.get_text().split()),
-                    "event": event_col.get_text(strip=True)
-                })
+        cards = soup.select(".uilp_exam_card")
 
-        exams.append(result)
+        for card in cards:
+            result = {}
 
-    return exams
+            exam_title = card.select_one(".exam_title")
+
+            if exam_title:
+                result["exam_short_name"] = exam_title.get_text(strip=True)
+
+                relative_link = exam_title.get("href")
+                result["exam_relative_url"] = relative_link
+                result["exam_full_url"] = urljoin(BASE, relative_link)
+
+                # Base URL for further pattern/syllabus scraping
+                result["base_url"] = urljoin(BASE, relative_link).rstrip("/")
+            else:
+                continue
+
+            # Full Exam Name
+            full_name = card.select_one(".exam_flnm")
+            result["exam_full_name"] = full_name.get_text(strip=True) if full_name else None
+
+            # Important Dates
+            result["important_dates"] = []
+
+            rows = card.select(".exam_impdates table tr")
+
+            for row in rows:
+                date_col = row.select_one(".fix-tdwidth p")
+                event_col = row.select_one(".fix-textlength p")
+
+                if date_col and event_col:
+                    result["important_dates"].append({
+                        "date": " ".join(date_col.get_text().split()),
+                        "event": event_col.get_text(strip=True)
+                    })
+
+            all_exams.append(result)
+
+    return all_exams
 
 
 
