@@ -2195,7 +2195,7 @@ if __name__ == "__main__":
         final_data = []
 
         # 🔹 Loop through listing pages
-        for page in range(1, 4):   # 1, 2, 3 pages only
+        for page in range(4, 8):   # 1, 2, 3 pages only
             print(f"Scraping listing page {page}")
             
             exams = scrape_listing_page(driver, page)  # Make scrape_listing_page accept page param
