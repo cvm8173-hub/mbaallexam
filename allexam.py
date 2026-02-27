@@ -2195,22 +2195,18 @@ if __name__ == "__main__":
     try:
         final_data = []
 
-        # 🔹 Loop through listing pages
-        for page in range(1, 5):   # 1, 2, 3 pages only
+        for page in range(1, 5):
             print(f"Scraping listing page {page}")
-            
-            
-            exams = scrape_listing_page(driver, page)  # Make scrape_listing_page accept page param
-            
-            if not exams:  # agar page empty ho, stop loop
+
+            exams = scrape_listing_page(driver, page)
+            if not exams:
                 break
 
             for exam in exams:
                 print(f"Processing: {exam['exam_short_name']}")
-                wrapped_data = {
-                    "exam_id":counter,
-                    "exam_data":exam_data,
-                }
+
+                exam_data = exam.copy()  # ✅ define first
+
                 base_url = exam["base_url"].rstrip("/")
                 counter += 1
 
@@ -2236,146 +2232,46 @@ if __name__ == "__main__":
                     "centre": base_url + "-centre",
                     "notification": base_url + "-notification",
                     "mca": base_url + "/mca-984",
-                    "me-mtech-mtech-lateral-entry-985": base_url + "/me-mtech-mtech-lateral-entry-985",
-                    "MArch": base_url + "/march-986",
+                    "me_mtech_lateral_entry": base_url + "/me-mtech-mtech-lateral-entry-985",
+                    "march": base_url + "/march-986",
                 }
 
-                exam_data = exam.copy()
+                def safe_scrape(key, func):
+                    try:
+                        return func(driver, URLS)
+                    except Exception as e:
+                        print(f"{key} page error:", e)
+                        return None
 
-                # 🔹 Wrap all scraping functions in try/except (aapka existing code)
-                # Example for one function:
-                try:
-                    exam_data["overviews"] = extract_cat_exam_data(driver, URLS)
-                except Exception as e:
-                    print("overviews page error:", e)
-                    exam_data["overviews"] = None
-                try:
-                    exam_data["mca"] = extract_mca_data(driver, URLS)
-                except Exception as e:
-                    print("mca page error:", e)
-                    exam_data["mca"] = None
-                try:
-                    exam_data["me-mtech-mtech-lateral-entry-985"] = extract_me_lateral_entry_data(driver, URLS)
-                except Exception as e:
-                    print("me-mtech-mtech-lateral-entry-985 page error:", e)
-                    exam_data["me-mtech-mtech-lateral-entry-985"] = None
-                try:
-                    exam_data["MArch"] = extract_cat_MArch_data(driver, URLS)
-                except Exception as e:
-                    print("MArch page error:", e)
-                    exam_data["MArch"] = None
-                try:
-                    exam_data["dates"] = extract_dates_data(driver, URLS)
-                except Exception as e:
-                    print("dates page error:", e)
-                    exam_data["dates"] = None  
-                try:
-                    exam_data["ans_key"] = extract_answerkey_data(driver, URLS)
-                except Exception as e:
-                    print("ans_key page error:", e)
-                    exam_data["ans_key"] = None 
+                exam_data["overviews"] = safe_scrape("overviews", extract_cat_exam_data)
+                exam_data["mca"] = safe_scrape("mca", extract_mca_data)
+                exam_data["me_mtech_lateral_entry"] = safe_scrape("me_mtech", extract_me_lateral_entry_data)
+                exam_data["march"] = safe_scrape("march", extract_cat_MArch_data)
+                exam_data["dates"] = safe_scrape("dates", extract_dates_data)
+                exam_data["ans_key"] = safe_scrape("ans_key", extract_answerkey_data)
+                exam_data["results"] = safe_scrape("results", extract_result_data)
+                exam_data["question_paper"] = safe_scrape("question_paper", extract_question_paper_data)
+                exam_data["pattern"] = safe_scrape("pattern", extract_pattern_data)
+                exam_data["cut_off"] = safe_scrape("cut_off", extract_cut_off_data)
+                exam_data["counselling"] = safe_scrape("counselling", extract_Counselling_data)
+                exam_data["app_form"] = safe_scrape("app_form", extract_app_form_data)
+                exam_data["syllabus"] = safe_scrape("syllabus", extract_syllabus_data)
+                exam_data["books"] = safe_scrape("books", extract_books_data)
+                exam_data["preparation"] = safe_scrape("preparation", extract_preparation_data)
+                exam_data["admit_card"] = safe_scrape("admit_card", extract_admit_card_data)
+                exam_data["news"] = safe_scrape("news", extract_news_data)
+                exam_data["analysis"] = safe_scrape("analysis", extract_Analysis_data)
+                exam_data["mock_test"] = safe_scrape("mock_test", extract_mock_test_data)
+                exam_data["registration"] = safe_scrape("registration", extract_registration_data)
+                exam_data["notification"] = safe_scrape("notification", extract_notification_data)
+                exam_data["centre"] = safe_scrape("centre", extract_center_data)
+                exam_data["college"] = safe_scrape("college", extract_college_data)
 
-                try:
-                    exam_data["results"] = extract_result_data(driver, URLS)
-                except Exception as e:
-                    print("results page error:", e)
-                    exam_data["results"] = None  
+                final_data.append({
+                    "exam_id": counter,
+                    "exam_data": exam_data
+                })
 
-                try:
-                    exam_data["question_paper"] = extract_question_paper_data(driver, URLS)
-                except Exception as e:
-                    print("question_paper page error:", e)
-                    exam_data["question_paper"] = None  
-
-                try:
-                    exam_data["pattern"] = extract_pattern_data(driver, URLS)
-                except Exception as e:
-                    print("Pattern page error:", e)
-                    exam_data["pattern"] = None
-                try:
-                    exam_data["cut_off"] = extract_cut_off_data(driver, URLS)
-                except Exception as e:
-                    print("cutoff page error:", e)
-                    exam_data["cut_off"] = None
-                try:
-                    exam_data["counselling"] = extract_Counselling_data(driver, URLS)
-                except Exception as e:
-                    print("counselling page error:", e)
-                    exam_data["counselling"] = None  
-                try:
-                    exam_data["app_form"] = extract_app_form_data(driver, URLS)
-                except Exception as e:
-                    print("app_form page error:", e)
-                    exam_data["app_form"] = None  
-
-
-                # 🔹 Scrape syllabus page
-                try:
-                    exam_data["syllabus"] = extract_syllabus_data(driver, URLS)
-                except Exception as e:
-                    print("Syllabus page error:", e)
-                    exam_data["syllabus"] = None
-                try:
-                    exam_data["books"] = extract_books_data(driver, URLS)
-                except Exception as e:
-                    print("books page error:", e)
-                    exam_data["books"] = None
-                # 🔹 Scrape pattern page
-                try:
-                    exam_data["preparation"] = extract_preparation_data(driver, URLS)
-                except Exception as e:
-                    print("preparation page error:", e)
-                    exam_data["preparation"] = None
-
-                # 🔹 Scrape syllabus page
-
-                try:
-                    exam_data["admit_card"] = extract_admit_card_data(driver, URLS)
-                except Exception as e:
-                    print("admit_card page error:", e)
-                    exam_data["admit_card"] = None
-                # 🔹 Scrape pattern page
-                try:
-                    exam_data["news"] = extract_news_data(driver, URLS)
-                except Exception as e:
-                    print("news page error:", e)
-                    exam_data["news"] = None
-                try:
-                    exam_data["analysis"] = extract_Analysis_data(driver, URLS)
-                except Exception as e:
-                    print("analysis page error:", e)
-                    exam_data["analysis"] = None
-                try:
-                    exam_data["mock_test"] = extract_mock_test_data(driver, URLS)
-                except Exception as e:
-                    print("mock_test page error:", e)
-                    exam_data["mock_test"] = None
-                try:
-                    exam_data["registration"] = extract_registration_data(driver, URLS)
-                except Exception as e:
-                    print("registration page error:", e)
-                    exam_data["registration"] = None
-                try:
-                    exam_data["notification"] = extract_notification_data(driver, URLS)
-                except Exception as e:
-                    print("notification page error:", e)
-                    exam_data["notification"] = None
-                try:
-                    exam_data["centre"] = extract_center_data(driver, URLS)
-                except Exception as e:
-                    print("centre page error:", e)
-                    exam_data["centre"] = None      
-                try:
-                    exam_data["college"] = extract_center_data(driver, URLS)
-                except Exception as e:
-                    print("college page error:", e)
-                    exam_data["college"] = None    
-
-                final_data.append(wrapped_data)
-
-            page += 1  # next listing page
-
-        # 🔹 Save JSON after all pages scraped
         with open("complete_exam_data.json", "w", encoding="utf-8") as f:
             json.dump(final_data, f, indent=4, ensure_ascii=False)
 
