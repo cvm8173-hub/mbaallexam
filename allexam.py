@@ -2190,12 +2190,12 @@ def extract_cat_MArch_data(driver, URLS):
 
 if __name__ == "__main__":
     driver = create_driver()
-    counter = 1
+    counter = 75
 
     try:
         final_data = []
 
-        for page in range(1, 5):
+        for page in range(5, 9):
             print(f"Scraping listing page {page}")
 
             exams = scrape_listing_page(driver, page)
@@ -2208,7 +2208,6 @@ if __name__ == "__main__":
                 exam_data = exam.copy()  # ✅ define first
 
                 base_url = exam["base_url"].rstrip("/")
-                counter += 1
 
                 URLS = {
                     "overviews": base_url,
@@ -2271,6 +2270,7 @@ if __name__ == "__main__":
                     "exam_id": counter,
                     "exam_data": exam_data
                 })
+                counter += 1
 
         with open("complete_exam_data.json", "w", encoding="utf-8") as f:
             json.dump(final_data, f, indent=4, ensure_ascii=False)
